@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CSPG India Academic Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-container signup-container">
+        <div class="auth-header">
+            <h1>Create Your Account</h1>
+            <p>Join the CSPG India academic community</p>
+        </div>
+        
+        <div class="auth-body">
+            <div id="messageContainer"></div>
+            
+            <form id="signupForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">FIRST NAME *</label>
+                        <input type="text" class="form-input" id="firstName" placeholder="John" required autocomplete="given-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LAST NAME *</label>
+                        <input type="text" class="form-input" id="lastName" placeholder="Doe" required autocomplete="family-name">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">EMAIL ADDRESS *</label>
+                    <input type="email" class="form-input" id="email" placeholder="your.email@university.edu" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">INSTITUTION/UNIVERSITY *</label>
+                    <input type="text" class="form-input" id="institution" placeholder="University Name" required autocomplete="organization">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">DEPARTMENT</label>
+                        <input type="text" class="form-input" id="department" placeholder="e.g., Computer Science" autocomplete="organization-title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">POSITION</label>
+                        <select class="form-select" id="position">
+                            <option value="">Select position</option>
+                            <option value="Professor">Professor</option>
+                            <option value="Associate Professor">Associate Professor</option>
+                            <option value="Assistant Professor">Assistant Professor</option>
+                            <option value="Researcher">Researcher</option>
+                            <option value="PhD Student">PhD Student</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">PASSWORD *</label>
+                        <input type="password" class="form-input" id="password" placeholder="Create a strong password" required minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CONFIRM PASSWORD *</label>
+                        <input type="password" class="form-input" id="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password">
+                    </div>
+                </div>
+                
+                <label class="terms-label">
+                    <input type="checkbox" id="terms" required>
+                    <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                </label>
+                
+                <button type="submit" class="btn-primary" id="signupBtn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+                
+                <div class="auth-link">
+                    Already have an account? <a href="login.html">Sign In</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            // Redirect if already logged in
+            if (Auth.isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const form = document.getElementById('signupForm');
+            const signupBtn = document.getElementById('signupBtn');
+            const btnText = signupBtn.querySelector('.btn-text');
+            const btnLoader = signupBtn.querySelector('.btn-loader');
+            const messageContainer = document.getElementById('messageContainer');
+
+            // Handle form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Clear previous messages
+                messageContainer.innerHTML = '';
+
+                // Get form data
+                const userData = {
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    institution: document.getElementById('institution').value.trim(),
+                    department: document.getElementById('department').value.trim(),
+                    position: document.getElementById('position').value,
+                    password: document.getElementById('password').value,
+                    confirmPassword: document.getElementById('confirmPassword').value
+                };
+
+                const termsAccepted = document.getElementById('terms').checked;
+
+                // Validation
+                if (!userData.firstName || !userData.lastName || !userData.email || !userData.institution || !userData.password) {
+                    UI.showError(messageContainer, 'Please fill in all required fields');
+                    return;
+                }
+
+                if (!termsAccepted) {
+                    UI.showError(messageContainer, 'Please accept the Terms of Service and Privacy Policy');
+                    return;
+                }
+
+                // Show loading state
+                signupBtn.disabled = true;
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'inline-block';
+
+                try {
+                    // Register user
+                    await Auth.register(userData);
+                    
+                    // Show success message
+                    UI.showSuccess(messageContainer, 'Account created successfully! Redirecting to login...');
+                    
+                    // Redirect to login
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } catch (error) {
+                    UI.showError(messageContainer, error.message);
+                    
+                    // Reset button state
+                    signupBtn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoader.style.display = 'none';
+                }
+            });
+
+            // Focus first input
+            document.getElementById('firstName').focus();
+        })();
+    </script>
+</body>
+</html>

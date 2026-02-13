@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CSPG India Academic Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="user-info">
+                    <h1 id="userName">Loading...</h1>
+                    <p id="userEmail">Loading...</p>
+                    <div class="user-meta">
+                        <div class="user-meta-item">
+                            <span>🏛️</span>
+                            <span id="userInstitution">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-settings" id="settingsBtn">⚙️ Settings</button>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div id="statsContainer" class="stats-grid">
+            <!-- Stats will be rendered here -->
+        </div>
+
+        <!-- Submissions -->
+        <section class="content-section">
+            <div id="submissionsContainer">
+                <!-- Submissions will be rendered here -->
+            </div>
+        </section>
+
+        <!-- Submission Form -->
+        <section class="content-section" id="submissionFormSection">
+            <div class="section-header">
+                <h2>Submit New Manuscript</h2>
+            </div>
+            
+            <div id="formMessageContainer"></div>
+
+            <form id="submissionForm" class="submission-form">
+                <div class="form-group">
+                    <label class="form-label">MANUSCRIPT TITLE *</label>
+                    <input type="text" class="form-input" id="title" placeholder="Enter manuscript title" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ABSTRACT *</label>
+                    <textarea class="form-textarea" id="abstract" placeholder="Enter abstract (max 300 words)" required rows="6"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">KEYWORDS *</label>
+                    <input type="text" class="form-input" id="keywords" placeholder="e.g., Machine Learning, Data Science, AI" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">JOURNAL/PUBLICATION *</label>
+                        <select class="form-select" id="journal" required>
+                            <option value="">Select journal</option>
+                            <option value="Journal of Computer Science">Journal of Computer Science</option>
+                            <option value="International Journal of AI Research">International Journal of AI Research</option>
+                            <option value="Data Science Review">Data Science Review</option>
+                            <option value="Applied Mathematics Journal">Applied Mathematics Journal</option>
+                            <option value="Engineering Studies">Engineering Studies</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CORRESPONDING AUTHOR *</label>
+                        <input type="text" class="form-input" id="correspondingAuthor" placeholder="Full name" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">AUTHOR EMAIL *</label>
+                        <input type="email" class="form-input" id="authorEmail" placeholder="author@university.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CO-AUTHORS</label>
+                        <input type="text" class="form-input" id="coAuthors" placeholder="Names separated by commas">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">AFFILIATION *</label>
+                    <input type="text" class="form-input" id="affiliation" placeholder="University/Institution name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">UPLOAD MANUSCRIPT *</label>
+                    <input type="file" id="manuscriptFile" accept=".pdf,.doc,.docx" required style="display: none;">
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="file-upload-icon">📄</div>
+                        <div class="file-upload-text">Click to upload or drag and drop</div>
+                        <div class="file-upload-hint">PDF or Word document (Max 50MB)</div>
+                    </div>
+                    <div class="file-selected" id="fileSelected">
+                        <span id="fileName"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <span class="btn-text">Submit Manuscript</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Submission Details Modal -->
+    <div id="submissionModal" class="modal">
+        <div class="modal-dialog">
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h2>Account Settings</h2>
+                <button class="modal-close" onclick="UserDashboard.closeSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="settingsMessageContainer"></div>
+                <form id="settingsForm">
+                    <h3 style="margin-bottom: 1rem;">Change Password</h3>
+                    <div class="form-group">
+                        <label class="form-label">CURRENT PASSWORD</label>
+                        <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NEW PASSWORD</label>
+                        <input type="password" class="form-input" id="newPassword" placeholder="Enter new password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CONFIRM NEW PASSWORD</label>
+                        <input type="password" class="form-input" id="confirmNewPassword" placeholder="Confirm new password">
+                    </div>
+                    <button type="submit" class="btn-primary">Update Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/submission.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            // File upload handling
+            const fileInput = document.getElementById('manuscriptFile');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileSelected = document.getElementById('fileSelected');
+            const fileNameSpan = document.getElementById('fileName');
+
+            // Click to upload
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // File input change
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('drag-over');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('drag-over');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect();
+                }
+            });
+
+            function handleFileSelect() {
+                const file = fileInput.files[0];
+                if (file) {
+                    fileNameSpan.textContent = `${file.name} (${UI.formatFileSize(file.size)})`;
+                    fileSelected.classList.add('active');
+                }
+            }
+
+            // Form submission
+            const form = document.getElementById('submissionForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoader = submitBtn.querySelector('.btn-loader');
+            const formMessageContainer = document.getElementById('formMessageContainer');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                // Clear messages
+                formMessageContainer.innerHTML = '';
+
+                // Get form data
+                const formData = {
+                    title: document.getElementById('title').value.trim(),
+                    abstract: document.getElementById('abstract').value.trim(),
+                    keywords: document.getElementById('keywords').value.trim(),
+                    journal: document.getElementById('journal').value,
+                    correspondingAuthor: document.getElementById('correspondingAuthor').value.trim(),
+                    authorEmail: document.getElementById('authorEmail').value.trim(),
+                    coAuthors: document.getElementById('coAuthors').value.trim(),
+                    affiliation: document.getElementById('affiliation').value.trim()
+                };
+
+                const file = fileInput.files[0];
+
+                // Validate file
+                if (!file) {
+                    UI.showError(formMessageContainer, 'Please select a file to upload');
+                    return;
+                }
+
+                // Show loading
+                submitBtn.disabled = true;
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'inline-block';
+
+                try {
+                    // Validate file
+                    Submission.validateFile(file);
+
+                    // Create submission
+                    const submission = await Submission.createSubmission(formData, file);
+
+                    // Show success
+                    UI.showSuccess(formMessageContainer, 'Manuscript submitted successfully!');
+
+                    // Reset form
+                    form.reset();
+                    fileSelected.classList.remove('active');
+
+                    // Refresh dashboard
+                    UserDashboard.refresh();
+
+                    // Scroll to submissions
+                    setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 1500);
+
+                } catch (error) {
+                    UI.showError(formMessageContainer, error.message);
+                } finally {
+                    // Reset button
+                    submitBtn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoader.style.display = 'none';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CSPG India Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="admin-header-content">
+                <div>
+                    <div class="admin-badge">🔐 ADMIN PANEL</div>
+                    <h1 id="adminName">Admin Dashboard</h1>
+                    <p id="adminEmail">Loading...</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-settings" id="settingsBtn">⚙️ Settings</button>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <button class="nav-tab active" data-tab="overview">
+                📊 Overview
+            </button>
+            <button class="nav-tab" data-tab="submissions">
+                📝 Submissions <span class="badge" id="submissionCount">0</span>
+            </button>
+            <button class="nav-tab" data-tab="payments">
+                💰 Payments <span class="badge" id="pendingPaymentCount">0</span>
+            </button>
+            <button class="nav-tab" data-tab="users">
+                👥 Users <span class="badge" id="userCount">0</span>
+            </button>
+            <button class="nav-tab" data-tab="activity">
+                📋 Activity Log
+            </button>
+        </nav>
+
+        <!-- Overview Section -->
+        <section id="overview" class="admin-section active">
+            <div class="admin-stats" id="statsContainer">
+                <!-- Stats will be rendered here -->
+            </div>
+
+            <div class="submissions-panel">
+                <div class="panel-header">
+                    <h2>Recent Submissions</h2>
+                </div>
+                <div id="recentSubmissionsTable"></div>
+            </div>
+        </section>
+
+        <!-- Submissions Section -->
+        <section id="submissions" class="admin-section">
+            <div class="submissions-panel">
+                <div class="panel-header">
+                    <h2>All Submissions</h2>
+                    <div class="panel-actions">
+                        <input type="search" class="search-box" id="searchBox" placeholder="Search by ID, title, author...">
+                        <button class="btn-export" onclick="AdminDashboard.exportSubmissions()">
+                            📥 Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filters" id="statusFilters">
+                    <button class="filter-btn active" data-status="all">All</button>
+                    <button class="filter-btn" data-status="Under Review">Under Review</button>
+                    <button class="filter-btn" data-status="Accepted">Accepted</button>
+                    <button class="filter-btn" data-status="Rejected">Rejected</button>
+                    <button class="filter-btn" data-status="Published">Published</button>
+                    <button class="filter-btn" data-status="Revision Required">Revision Required</button>
+                </div>
+
+                <div class="admin-table" id="submissionsTable">
+                    <!-- Table will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Payments Section -->
+        <section id="payments" class="admin-section">
+            <div class="submissions-panel">
+                <div class="panel-header">
+                    <h2>Payment Management</h2>
+                    <div class="panel-actions">
+                        <button class="btn-export" onclick="AdminDashboard.exportPayments()">
+                            📥 Export Payments
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filters" id="paymentFilters">
+                    <button class="filter-btn active" data-payment="all">All</button>
+                    <button class="filter-btn" data-payment="Pending">Pending</button>
+                    <button class="filter-btn" data-payment="Paid">Paid</button>
+                    <button class="filter-btn" data-payment="Failed">Failed</button>
+                </div>
+
+                <div class="admin-table" id="paymentsTable">
+                    <!-- Table will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users" class="admin-section">
+            <div class="submissions-panel">
+                <div class="panel-header">
+                    <h2>Registered Users</h2>
+                    <div class="panel-actions">
+                        <button class="btn-export" onclick="AdminDashboard.exportUsers()">
+                            📥 Export Users
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-table" id="usersTable">
+                    <!-- Table will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity Log Section -->
+        <section id="activity" class="admin-section">
+            <div class="activity-log">
+                <div class="panel-header">
+                    <h2>Admin Activity Log</h2>
+                </div>
+                <div id="activityLogContainer">
+                    <!-- Activity logs will be rendered here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Edit Submission Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-dialog">
+            <div id="editModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-dialog">
+            <div id="paymentModalContent"></div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-dialog">
+            <div id="userModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h2>Admin Settings</h2>
+                <button class="modal-close" onclick="AdminDashboard.closeSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="settingsMessageContainer"></div>
+                <form id="settingsForm">
+                    <h3 style="margin-bottom: 1rem;">Change Admin Credentials</h3>
+                    <div class="form-group">
+                        <label class="form-label">CURRENT PASSWORD</label>
+                        <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NEW EMAIL (Optional)</label>
+                        <input type="email" class="form-input" id="newEmail" placeholder="Enter new email or leave blank">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NEW PASSWORD</label>
+                        <input type="password" class="form-input" id="newPassword" placeholder="Enter new password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CONFIRM NEW PASSWORD</label>
+                        <input type="password" class="form-input" id="confirmNewPassword" placeholder="Confirm new password">
+                    </div>
+                    <button type="submit" class="btn-primary">Update Credentials</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/submission.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
