@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Submission Storage Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; max-width: 900px; margin: 20px auto; padding: 20px; }
+        h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        .step { background: #f9f9f9; border-left: 4px solid #007bff; padding: 20px; margin: 15px 0; border-radius: 4px; }
+        .step h2 { color: #007bff; margin-bottom: 10px; font-size: 16px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px 5px 5px 0; }
+        button:hover { background: #0056b3; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #c82333; }
+        .result { margin-top: 15px; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; background: white; border: 1px solid #ddd; min-height: 30px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #0c5460; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Submission Storage Test - Find the Exact Problem</h1>
+    
+    <div class="step">
+        <h2>STEP 1: Clear Everything</h2>
+        <button onclick="step1()" class="danger">Clear All Data</button>
+        <div id="result1" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 2: Create a Test User</h2>
+        <button onclick="step2()">Create User</button>
+        <div id="result2" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 3: Log In</h2>
+        <button onclick="step3()">Log In</button>
+        <div id="result3" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 4: Check Session (Super Important!)</h2>
+        <button onclick="step4()">Check Session</button>
+        <div id="result4" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 5: Create a Fake Submission</h2>
+        <button onclick="step5()">Create Submission</button>
+        <div id="result5" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 6: Verify Submission Was Saved</h2>
+        <button onclick="step6()">Check Storage</button>
+        <div id="result6" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 7: Check If User IDs Match</h2>
+        <button onclick="step7()">Verify Match</button>
+        <div id="result7" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h2>STEP 8: Try to Get User's Submissions</h2>
+        <button onclick="step8()">Get User Submissions</button>
+        <div id="result8" class="result"></div>
+    </div>
+    
+    <hr style="margin: 40px 0;">
+    
+    <div class="step" style="border-left-color: #28a745;">
+        <h2>✅ If All Steps Pass</h2>
+        <p>Then the code is working correctly. Your issue is something else. Go to the real dashboard and test there.</p>
+    </div>
+    
+    <div class="step" style="border-left-color: #dc3545;">
+        <h2>❌ If Any Step Fails</h2>
+        <p>Write down which step failed and the exact error message. This will help identify the real issue.</p>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/submission.js"></script>
+
+    <script>
+        'use strict';
+        
+        function log(id, text, isError = false) {
+            const div = document.getElementById(id);
+            const span = document.createElement('div');
+            span.className = isError ? 'error' : 'success';
+            span.textContent = text;
+            div.appendChild(span);
+        }
+        
+        function info(id, text) {
+            const div = document.getElementById(id);
+            const span = document.createElement('div');
+            span.className = 'info';
+            span.textContent = text;
+            div.appendChild(span);
+        }
+        
+        function clear(id) {
+            document.getElementById(id).innerHTML = '';
+        }
+        
+        async function step1() {
+            clear('result1');
+            localStorage.clear();
+            log('result1', '✅ All data cleared');
+        }
+        
+        async function step2() {
+            clear('result2');
+            try {
+                const userData = {
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: 'test@test.com',
+                    institution: 'University',
+                    department: 'CS',
+                    position: 'Professor',
+                    password: 'Test@123',
+                    confirmPassword: 'Test@123'
+                };
+                await Auth.register(userData);
+                log('result2', '✅ User created successfully');
+                info('result2', 'Email: test@test.com | Password: Test@123');
+            } catch (error) {
+                log('result2', '❌ ' + error.message, true);
+            }
+        }
+        
+        async function step3() {
+            clear('result3');
+            try {
+                const session = await Auth.login('test@test.com', 'Test@123');
+                log('result3', '✅ Login successful!');
+                info('result3', 'User: ' + session.fullName);
+                info('result3', 'User ID: ' + session.userId);
+            } catch (error) {
+                log('result3', '❌ ' + error.message, true);
+            }
+        }
+        
+        function step4() {
+            clear('result4');
+            try {
+                const session = JSON.parse(localStorage.getItem('cspg_session'));
+                if (!session) {
+                    log('result4', '❌ No session found! Are you logged in?', true);
+                    return;
+                }
+                
+                if (!session.userId) {
+                    log('result4', '❌ Session exists but NO userId field!', true);
+                    info('result4', 'Session: ' + JSON.stringify(session, null, 2));
+                    return;
+                }
+                
+                log('result4', '✅ Session found with userId!');
+                info('result4', 'User ID: ' + session.userId);
+                info('result4', 'Email: ' + session.email);
+                info('result4', 'Full Name: ' + session.fullName);
+            } catch (error) {
+                log('result4', '❌ Error: ' + error.message, true);
+            }
+        }
+        
+        function step5() {
+            clear('result5');
+            try {
+                const session = JSON.parse(localStorage.getItem('cspg_session'));
+                if (!session || !session.userId) {
+                    log('result5', '❌ No session! Go back to Step 4.', true);
+                    return;
+                }
+                
+                const submission = {
+                    id: 'SUB-TEST-' + Date.now(),
+                    userId: session.userId,  // THIS IS CRITICAL
+                    title: 'Test Paper',
+                    abstract: 'Test abstract',
+                    keywords: 'test',
+                    journal: 'Test Journal',
+                    correspondingAuthor: 'Test',
+                    authorEmail: 'test@test.com',
+                    coAuthors: '',
+                    affiliation: 'University',
+                    status: 'Under Review',
+                    paymentStatus: 'Pending',
+                    fileName: 'test.pdf',
+                    fileSize: 1000,
+                    fileType: 'application/pdf',
+                    dateSubmitted: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    deleted: false
+                };
+                
+                Storage.addSubmission(submission);
+                log('result5', '✅ Submission created and saved!');
+                info('result5', 'ID: ' + submission.id);
+                info('result5', 'User ID in submission: ' + submission.userId);
+            } catch (error) {
+                log('result5', '❌ Error: ' + error.message, true);
+            }
+        }
+        
+        function step6() {
+            clear('result6');
+            try {
+                const subs = JSON.parse(localStorage.getItem('cspg_submissions'));
+                
+                if (!subs || subs.length === 0) {
+                    log('result6', '❌ No submissions in storage!', true);
+                    log('result6', 'Storage data is empty or corrupted', true);
+                    return;
+                }
+                
+                log('result6', '✅ Submissions found in storage!');
+                info('result6', 'Total submissions: ' + subs.length);
+                
+                subs.forEach((sub, i) => {
+                    info('result6', `Submission ${i+1}: ID=${sub.id}, userID=${sub.userId}, title=${sub.title}`);
+                });
+            } catch (error) {
+                log('result6', '❌ Error: ' + error.message, true);
+            }
+        }
+        
+        function step7() {
+            clear('result7');
+            try {
+                const session = JSON.parse(localStorage.getItem('cspg_session'));
+                const subs = JSON.parse(localStorage.getItem('cspg_submissions'));
+                
+                if (!session) {
+                    log('result7', '❌ No session found!', true);
+                    return;
+                }
+                
+                if (!subs || subs.length === 0) {
+                    log('result7', '❌ No submissions found!', true);
+                    return;
+                }
+                
+                const sessionUserId = session.userId;
+                const submissionUserId = subs[0].userId;
+                
+                log('result7', 'Session User ID: ' + sessionUserId);
+                log('result7', 'Submission User ID: ' + submissionUserId);
+                
+                if (sessionUserId === submissionUserId) {
+                    log('result7', '✅ USER IDs MATCH! This is correct!');
+                } else {
+                    log('result7', '❌ USER IDs DO NOT MATCH! This is the problem!', true);
+                    log('result7', 'Session user ID: ' + sessionUserId, true);
+                    log('result7', 'Submission user ID: ' + submissionUserId, true);
+                }
+            } catch (error) {
+                log('result7', '❌ Error: ' + error.message, true);
+            }
+        }
+        
+        function step8() {
+            clear('result8');
+            try {
+                const session = JSON.parse(localStorage.getItem('cspg_session'));
+                
+                if (!session) {
+                    log('result8', '❌ No session found!', true);
+                    return;
+                }
+                
+                // Manually filter submissions
+                const allSubs = JSON.parse(localStorage.getItem('cspg_submissions') || '[]');
+                const filtered = allSubs.filter(s => s.userId === session.userId && !s.deleted);
+                
+                log('result8', 'Total submissions: ' + allSubs.length);
+                log('result8', 'User submissions: ' + filtered.length);
+                
+                if (filtered.length === 0) {
+                    log('result8', '❌ No submissions for this user!', true);
+                    log('result8', '(But all submissions count: ' + allSubs.length + ')', true);
+                } else {
+                    log('result8', '✅ Found ' + filtered.length + ' submission(s) for user!');
+                    filtered.forEach((sub, i) => {
+                        info('result8', `Sub ${i+1}: ${sub.title} (${sub.status})`);
+                    });
+                }
+            } catch (error) {
+                log('result8', '❌ Error: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ultimate Test - Submission Storage</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; text-align: center; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .instruction { background: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #007bff; margin: 20px 0; }
+        button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; margin: 10px 0; }
+        button:hover { background: #0056b3; }
+        .output { background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #ddd; margin-top: 10px; font-family: monospace; font-size: 13px; min-height: 30px; white-space: pre-wrap; word-break: break-all; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        hr { margin: 30px 0; border: none; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Ultimate Submission Test</h1>
+        
+        <div class="instruction">
+            <strong>Instructions:</strong> Click buttons 1→2→3→4 in order. Each button builds on the previous.
+        </div>
+        
+        <h2>1️⃣ Clean Start</h2>
+        <button onclick="test1()">Clear All Data & Create User</button>
+        <div id="out1" class="output"></div>
+        
+        <h2>2️⃣ Login</h2>
+        <button onclick="test2()">Login & Check Session</button>
+        <div id="out2" class="output"></div>
+        
+        <h2>3️⃣ Create Submission</h2>
+        <button onclick="test3()">Create & Save Submission</button>
+        <div id="out3" class="output"></div>
+        
+        <h2>4️⃣ Verify Everything</h2>
+        <button onclick="test4()">Check All Storage & Data</button>
+        <div id="out4" class="output"></div>
+        
+        <hr>
+        
+        <h2>📋 Console Commands (if you want to verify manually)</h2>
+        <div class="instruction">
+            Open F12 and paste these commands:
+        </div>
+        <div style="background: #f4f4f4; padding: 10px; border-radius: 4px; font-family: monospace; text-align: left;">
+localStorage.clear(); localStorage.setItem('test', 'yes'); JSON.parse(localStorage.getItem('cspg_session'))<br><br>JSON.parse(localStorage.getItem('cspg_submissions'))
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/submission.js"></script>
+
+    <script>
+        'use strict';
+        
+        function out(id, text, isError = false) {
+            const el = document.getElementById(id);
+            const cls = isError ? 'error' : 'success';
+            el.innerHTML += `<span class="${cls}">${text}</span>\n`;
+        }
+        
+        function clear(id) {
+            document.getElementById(id).innerHTML = '';
+        }
+        
+        async function test1() {
+            clear('out1');
+            try {
+                localStorage.clear();
+                out('out1', '✅ Storage cleared');
+                
+                const userData = {
+                    firstName: 'John', lastName: 'Doe', email: 'john@test.com',
+                    institution: 'MIT', department: 'CS', position: 'Professor',
+                    password: 'Test@123', confirmPassword: 'Test@123'
+                };
+                
+                await Auth.register(userData);
+                out('out1', '✅ User created');
+                out('out1', '   Email: john@test.com');
+                out('out1', '   Password: Test@123');
+                out('out1', '✅ Click button 2 to login');
+            } catch (e) {
+                out('out1', '❌ ' + e.message, true);
+            }
+        }
+        
+        async function test2() {
+            clear('out2');
+            try {
+                const session = await Auth.login('john@test.com', 'Test@123');
+                
+                out('out2', '✅ Login successful');
+                out('out2', '   User: ' + session.fullName);
+                out('out2', '   Email: ' + session.email);
+                out('out2', '   User ID: ' + session.userId);
+                
+                const stored = JSON.parse(localStorage.getItem('cspg_session'));
+                if (stored && stored.userId) {
+                    out('out2', '✅ Session saved in storage');
+                    out('out2', '✅ Click button 3 to create submission');
+                } else {
+                    out('out2', '❌ Session NOT saved in storage!', true);
+                }
+            } catch (e) {
+                out('out2', '❌ ' + e.message, true);
+            }
+        }
+        
+        async function test3() {
+            clear('out3');
+            try {
+                const blob = new Blob(['PDF content'], { type: 'application/pdf' });
+                const file = new File([blob], 'test.pdf', { type: 'application/pdf' });
+                
+                const form = {
+                    title: 'Test Paper',
+                    abstract: 'This is a test',
+                    keywords: 'test',
+                    journal: 'Journal',
+                    correspondingAuthor: 'John Doe',
+                    authorEmail: 'john@test.com',
+                    coAuthors: '',
+                    affiliation: 'MIT'
+                };
+                
+                const submission = await Submission.createSubmission(form, file);
+                
+                out('out3', '✅ Submission created');
+                out('out3', '   ID: ' + submission.id);
+                out('out3', '   User ID in submission: ' + submission.userId);
+                out('out3', '   Title: ' + submission.title);
+                out('out3', '✅ Click button 4 to verify');
+            } catch (e) {
+                out('out3', '❌ ' + e.message, true);
+            }
+        }
+        
+        function test4() {
+            clear('out4');
+            try {
+                const session = JSON.parse(localStorage.getItem('cspg_session'));
+                const subs = JSON.parse(localStorage.getItem('cspg_submissions') || '[]');
+                
+                // Check session
+                if (!session) {
+                    out('out4', '❌ NO SESSION IN STORAGE', true);
+                    return;
+                }
+                
+                out('out4', '✅ Session found');
+                out('out4', '   Session User ID: ' + session.userId);
+                
+                // Check submissions
+                if (subs.length === 0) {
+                    out('out4', '❌ NO SUBMISSIONS SAVED!', true);
+                    return;
+                }
+                
+                out('out4', '✅ Submissions found: ' + subs.length);
+                
+                // Check match
+                const userSubs = subs.filter(s => s.userId === session.userId);
+                out('out4', '✅ Submissions for this user: ' + userSubs.length);
+                
+                if (userSubs.length === 0) {
+                    out('out4', '❌ USER ID MISMATCH!', true);
+                    out('out4', '   Session: ' + session.userId, true);
+                    out('out4', '   Submission: ' + subs[0].userId, true);
+                    return;
+                }
+                
+                out('out4', '✅ EVERYTHING WORKING!');
+                out('out4', '   User: ' + session.fullName);
+                out('out4', '   Submissions: ' + userSubs.length);
+                out('out4', '');
+                out('out4', '🎉 Now go test the REAL dashboard!');
+                out('out4', '   1. Sign up at signup.html');
+                out('out4', '   2. Login at login.html');
+                out('out4', '   3. Submit a manuscript');
+                out('out4', '   4. Check if it appears');
+                
+            } catch (e) {
+                out('out4', '❌ ERROR: ' + e.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

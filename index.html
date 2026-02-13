@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - CSPG India Academic Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Header -->
@@ -47,7 +51,7 @@
             <div class="section-header">
                 <h2>Submit New Manuscript</h2>
             </div>
-            
+
             <div id="formMessageContainer"></div>
 
             <form id="submissionForm" class="submission-form">
@@ -58,12 +62,14 @@
 
                 <div class="form-group">
                     <label class="form-label">ABSTRACT *</label>
-                    <textarea class="form-textarea" id="abstract" placeholder="Enter abstract (max 300 words)" required rows="6"></textarea>
+                    <textarea class="form-textarea" id="abstract" placeholder="Enter abstract (max 300 words)" required
+                        rows="6"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">KEYWORDS *</label>
-                    <input type="text" class="form-input" id="keywords" placeholder="e.g., Machine Learning, Data Science, AI" required>
+                    <input type="text" class="form-input" id="keywords"
+                        placeholder="e.g., Machine Learning, Data Science, AI" required>
                 </div>
 
                 <div class="form-row">
@@ -72,7 +78,8 @@
                         <select class="form-select" id="journal" required>
                             <option value="">Select journal</option>
                             <option value="Journal of Computer Science">Journal of Computer Science</option>
-                            <option value="International Journal of AI Research">International Journal of AI Research</option>
+                            <option value="International Journal of AI Research">International Journal of AI Research
+                            </option>
                             <option value="Data Science Review">Data Science Review</option>
                             <option value="Applied Mathematics Journal">Applied Mathematics Journal</option>
                             <option value="Engineering Studies">Engineering Studies</option>
@@ -88,7 +95,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">AUTHOR EMAIL *</label>
-                        <input type="email" class="form-input" id="authorEmail" placeholder="author@university.edu" required>
+                        <input type="email" class="form-input" id="authorEmail" placeholder="author@university.edu"
+                            required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">CO-AUTHORS</label>
@@ -98,7 +106,8 @@
 
                 <div class="form-group">
                     <label class="form-label">AFFILIATION *</label>
-                    <input type="text" class="form-input" id="affiliation" placeholder="University/Institution name" required>
+                    <input type="text" class="form-input" id="affiliation" placeholder="University/Institution name"
+                        required>
                 </div>
 
                 <div class="form-group">
@@ -142,15 +151,18 @@
                     <h3 style="margin-bottom: 1rem;">Change Password</h3>
                     <div class="form-group">
                         <label class="form-label">CURRENT PASSWORD</label>
-                        <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                        <input type="password" class="form-input" id="currentPassword"
+                            placeholder="Enter current password">
                     </div>
                     <div class="form-group">
                         <label class="form-label">NEW PASSWORD</label>
-                        <input type="password" class="form-input" id="newPassword" placeholder="Enter new password" minlength="6">
+                        <input type="password" class="form-input" id="newPassword" placeholder="Enter new password"
+                            minlength="6">
                     </div>
                     <div class="form-group">
                         <label class="form-label">CONFIRM NEW PASSWORD</label>
-                        <input type="password" class="form-input" id="confirmNewPassword" placeholder="Confirm new password">
+                        <input type="password" class="form-input" id="confirmNewPassword"
+                            placeholder="Confirm new password">
                     </div>
                     <button type="submit" class="btn-primary">Update Password</button>
                 </form>
@@ -166,7 +178,7 @@
     <script src="js/submission.js"></script>
     <script src="js/dashboard.js"></script>
     <script>
-        (function() {
+        (function () {
             'use strict';
 
             // File upload handling
@@ -196,7 +208,7 @@
             fileUploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 fileUploadArea.classList.remove('drag-over');
-                
+
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     fileInput.files = files;
@@ -219,7 +231,7 @@
             const btnLoader = submitBtn.querySelector('.btn-loader');
             const formMessageContainer = document.getElementById('formMessageContainer');
 
-            form.addEventListener('submit', async function(e) {
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
 
                 // Clear messages
@@ -267,9 +279,13 @@
                     // Refresh dashboard
                     UserDashboard.refresh();
 
-                    // Scroll to submissions
+                    // Scroll to submissions and show details
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Show submission details
+                        if (submission && submission.id) {
+                            UserDashboard.viewSubmission(submission.id);
+                        }
                     }, 1500);
 
                 } catch (error) {
@@ -284,4 +300,5 @@
         })();
     </script>
 </body>
+
 </html>

@@ -1,5 +1,5 @@
 // Submission Module
-const Submission = (function() {
+const Submission = (function () {
     'use strict';
 
     const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -11,8 +11,8 @@ const Submission = (function() {
 
     // Generate unique submission ID
     function generateId() {
-        return 'SUB-' + Date.now().toString(36).toUpperCase() + '-' + 
-               Math.random().toString(36).substr(2, 5).toUpperCase();
+        return 'SUB-' + Date.now().toString(36).toUpperCase() + '-' +
+            Math.random().toString(36).substr(2, 5).toUpperCase();
     }
 
     // Validate file
@@ -32,19 +32,14 @@ const Submission = (function() {
         return true;
     }
 
-    // Convert file to base64 for storage
-    async function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
+    // Create submission
     // Create submission
     async function createSubmission(formData, file) {
         const user = Auth.getCurrentUser();
+        console.log('=== SUBMISSION CREATE START ===');
+        console.log('User from session:', user);
+        console.log('User userId:', user ? user.userId : 'NO USER');
+
         if (!user) {
             throw new Error('User not authenticated');
         }
@@ -52,10 +47,8 @@ const Submission = (function() {
         // Validate file
         validateFile(file);
 
-        // Convert file to base64 for storage
-        const fileData = await fileToBase64(file);
-
-        // Create submission object
+        // DO NOT store file data - it causes localStorage issues
+        // Just store file metadata instead
         const submission = {
             id: generateId(),
             userId: user.userId,
@@ -72,22 +65,41 @@ const Submission = (function() {
             fileName: file.name,
             fileSize: file.size,
             fileType: file.type,
-            fileData: fileData, // Store base64 encoded file
+            // IMPORTANT: NOT storing fileData - this was causing the issue!
             dateSubmitted: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
             deleted: false
         };
 
-        // Submit to Google Services
+        console.log('Submission object created:', submission);
+
+        // Submit to Google Services (without file data)
         try {
-            await API.submitManuscript(submission, file);
+            const result = await API.submitManuscript(submission, file);
+            if (result && result.fileUpload && result.fileUpload.fileUrl) {
+                submission.fileUrl = result.fileUpload.fileUrl;
+            }
         } catch (error) {
             console.error('External submission error:', error);
-            // Continue with local storage even if external fails
         }
 
         // Save to local storage
-        Storage.addSubmission(submission);
+        try {
+            Storage.addSubmission(submission);
+            console.log('✅ Submission saved to storage');
+
+            // Verify it was saved
+            const allSubs = Storage.getSubmissions();
+            console.log('Total submissions now:', allSubs.length);
+            console.log('All submissions:', allSubs);
+
+            const userSubs = Storage.getUserSubmissions(user.userId);
+            console.log('User submissions:', userSubs);
+            console.log('=== SUBMISSION CREATE END ===');
+        } catch (error) {
+            console.error('❌ Failed to save submission:', error);
+            throw new Error('Failed to save submission: ' + error.message);
+        }
 
         return submission;
     }
@@ -95,9 +107,15 @@ const Submission = (function() {
     // Get user submissions
     function getUserSubmissions() {
         const user = Auth.getCurrentUser();
-        if (!user) return [];
-        
-        return Storage.getUserSubmissions(user.userId);
+        if (!user) {
+            console.error('❌ Cannot get submissions - No user logged in');
+            return [];
+        }
+
+        console.log('📋 Getting submissions for user:', user.fullName, '(', user.userId, ')');
+        const submissions = Storage.getUserSubmissions(user.userId);
+        console.log('   Found:', submissions.length, 'submissions');
+        return submissions;
     }
 
     // Get submission by ID
@@ -109,7 +127,14 @@ const Submission = (function() {
     // Download file
     function downloadFile(submissionId) {
         const submission = getSubmissionById(submissionId);
-        if (!submission || !submission.fileData) {
+        if (!submission) return;
+
+        if (submission.fileUrl) {
+            window.open(submission.fileUrl, '_blank');
+            return;
+        }
+
+        if (!submission.fileData) {
             alert('File not available for download');
             return;
         }
@@ -142,8 +167,9 @@ const Submission = (function() {
     // Get submission statistics
     function getStats() {
         const submissions = getUserSubmissions();
-        
-        return {
+        console.log('📊 Computing stats for', submissions.length, 'submissions');
+
+        const stats = {
             total: submissions.length,
             underReview: submissions.filter(s => s.status === 'Under Review').length,
             accepted: submissions.filter(s => s.status === 'Accepted').length,
@@ -151,6 +177,9 @@ const Submission = (function() {
             pendingPayment: submissions.filter(s => s.paymentStatus === 'Pending').length,
             paidSubmissions: submissions.filter(s => s.paymentStatus === 'Paid').length
         };
+
+        console.log('   Stats:', stats);
+        return stats;
     }
 
     return {

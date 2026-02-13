@@ -45,7 +45,11 @@ const Storage = (function() {
     // Get submissions
     function getSubmissions() {
         try {
-            return JSON.parse(localStorage.getItem(KEYS.SUBMISSIONS) || '[]');
+            const data = localStorage.getItem(KEYS.SUBMISSIONS);
+            console.log('Raw submissions from storage:', data);
+            const parsed = JSON.parse(data || '[]');
+            console.log('Parsed submissions:', parsed);
+            return parsed;
         } catch (e) {
             console.error('Error parsing submissions:', e);
             return [];
@@ -54,21 +58,61 @@ const Storage = (function() {
 
     // Set submissions
     function setSubmissions(submissions) {
-        localStorage.setItem(KEYS.SUBMISSIONS, JSON.stringify(submissions));
+        try {
+            const json = JSON.stringify(submissions);
+            console.log('Setting submissions, size:', json.length, 'bytes');
+            localStorage.setItem(KEYS.SUBMISSIONS, json);
+            console.log('✅ Submissions saved');
+        } catch (e) {
+            console.error('❌ Error saving submissions:', e);
+            throw e;
+        }
     }
 
     // Get user submissions
     function getUserSubmissions(userId) {
+        console.log('🔍 Getting submissions for user:', userId);
         const submissions = getSubmissions();
-        return submissions.filter(s => s.userId === userId && !s.deleted);
+        console.log('   Total submissions in storage:', submissions.length);
+        
+        const filtered = submissions.filter(s => {
+            const matches = s.userId === userId && !s.deleted;
+            if (!matches) {
+                console.log('   Skipping:', s.id, '(userId:', s.userId, ', deleted:', s.deleted, ')');
+            }
+            return matches;
+        });
+        
+        console.log('   User submissions found:', filtered.length);
+        return filtered;
     }
 
     // Add submission
     function addSubmission(submission) {
-        const submissions = getSubmissions();
-        submissions.push(submission);
-        setSubmissions(submissions);
-        return submission;
+        try {
+            console.log('📝 Adding new submission...');
+            console.log('   ID:', submission.id);
+            console.log('   User ID:', submission.userId);
+            console.log('   Title:', submission.title);
+            
+            const submissions = getSubmissions();
+            console.log('   Current count:', submissions.length);
+            
+            submissions.push(submission);
+            console.log('   After push count:', submissions.length);
+            
+            setSubmissions(submissions);
+            
+            // Verify it was saved
+            const check = getSubmissions();
+            console.log('   Verified count:', check.length);
+            console.log('✅ Submission added successfully!');
+            
+            return submission;
+        } catch (error) {
+            console.error('❌ Error adding submission:', error);
+            throw error;
+        }
     }
 
     // Update submission

@@ -1,26 +1,43 @@
 // User Dashboard Module
-const UserDashboard = (function() {
+const UserDashboard = (function () {
     'use strict';
 
     let currentUser = null;
 
     // Initialize dashboard
     function init() {
-        if (!Auth.requireAuth()) return;
+        console.log('=== DASHBOARD INIT START ===');
+
+        if (!Auth.requireAuth()) {
+            console.log('User not authenticated, redirecting...');
+            return;
+        }
 
         currentUser = Auth.getCurrentUser();
-        
+        console.log('Current user after requireAuth:', currentUser);
+
+        if (!currentUser) {
+            console.error('❌ Current user is null!');
+            Auth.logout();
+            return;
+        }
+
+        console.log('User ID:', currentUser.userId);
+        console.log('User email:', currentUser.email);
+
         // Render user info
         renderUserInfo();
-        
+
         // Render stats
         renderStats();
-        
+
         // Render submissions
         renderSubmissions();
-        
+
         // Setup event listeners
         setupEventListeners();
+
+        console.log('=== DASHBOARD INIT END ===');
     }
 
     // Render user info in header
@@ -28,15 +45,15 @@ const UserDashboard = (function() {
         const userNameElement = document.getElementById('userName');
         const userEmailElement = document.getElementById('userEmail');
         const userInstitutionElement = document.getElementById('userInstitution');
-        
+
         if (userNameElement) {
             userNameElement.textContent = currentUser.fullName;
         }
-        
+
         if (userEmailElement) {
             userEmailElement.textContent = currentUser.email;
         }
-        
+
         if (userInstitutionElement) {
             userInstitutionElement.textContent = currentUser.institution;
         }
@@ -45,7 +62,7 @@ const UserDashboard = (function() {
     // Render statistics
     function renderStats() {
         const stats = Submission.getStats();
-        
+
         const statsContainer = document.getElementById('statsContainer');
         if (!statsContainer) return;
 
@@ -87,11 +104,17 @@ const UserDashboard = (function() {
     // Render submissions table
     function renderSubmissions() {
         const submissions = Submission.getUserSubmissions();
+        console.log('Submissions in renderSubmissions:', submissions);
+
         const submissionsContainer = document.getElementById('submissionsContainer');
-        
-        if (!submissionsContainer) return;
+
+        if (!submissionsContainer) {
+            console.error('submissionsContainer element not found');
+            return;
+        }
 
         if (submissions.length === 0) {
+            console.log('No submissions found, showing empty state');
             submissionsContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📝</div>
@@ -147,6 +170,7 @@ const UserDashboard = (function() {
             </div>
         `;
 
+        console.log('Rendering submissions table with', submissions.length, 'submissions');
         submissionsContainer.innerHTML = html;
     }
 
@@ -157,7 +181,7 @@ const UserDashboard = (function() {
 
         const modal = document.getElementById('submissionModal');
         const modalContent = document.getElementById('modalContent');
-        
+
         if (!modal || !modalContent) return;
 
         modalContent.innerHTML = `
@@ -205,6 +229,7 @@ const UserDashboard = (function() {
                 <div class="detail-row">
                     <label>File:</label>
                     <span>${submission.fileName} (${UI.formatFileSize(submission.fileSize)})</span>
+                    ${submission.fileUrl ? `<a href="${submission.fileUrl}" target="_blank" style="margin-left: 10px; color: var(--color-accent); text-decoration: none;">View File ↗️</a>` : ''}
                 </div>
                 <div class="detail-row">
                     <label>Date Submitted:</label>
@@ -326,7 +351,7 @@ const UserDashboard = (function() {
         try {
             await Auth.changePassword(currentPassword, newPassword);
             UI.showSuccess(messageContainer, 'Password updated successfully!');
-            
+
             setTimeout(() => {
                 closeSettingsModal();
                 Auth.logout();

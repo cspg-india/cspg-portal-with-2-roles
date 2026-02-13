@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test - Submissions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: #f0f0f0;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 5px 5px 0;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button.danger {
+            background: #dc3545;
+        }
+        
+        button.danger:hover {
+            background: #c82333;
+        }
+        
+        pre {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .output {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Simple Submission Test</h1>
+    
+    <div class="test-section">
+        <h2>Step 1: Clear All Data</h2>
+        <button onclick="clearAll()" class="danger">Clear LocalStorage</button>
+        <div id="output1" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 2: Create Test User</h2>
+        <button onclick="createUser()">Create User</button>
+        <div id="output2" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 3: Login</h2>
+        <button onclick="doLogin()">Login</button>
+        <div id="output3" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 4: Create Submission</h2>
+        <button onclick="createSubmission()">Create Submission</button>
+        <div id="output4" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 5: Check Data</h2>
+        <button onclick="checkStorage()">Check Storage</button>
+        <button onclick="checkSession()">Check Session</button>
+        <button onclick="checkSubmissions()">Check Submissions</button>
+        <div id="output5" class="output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 6: Verify Match</h2>
+        <button onclick="verifyUserSubmissionMatch()">Verify User ID Match</button>
+        <div id="output6" class="output"></div>
+    </div>
+    
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/submission.js"></script>
+    
+    <script>
+        'use strict';
+        
+        function log(elementId, message, isError = false) {
+            const el = document.getElementById(elementId);
+            const span = document.createElement('div');
+            span.innerHTML = isError ? `<span class="error">❌ ${message}</span>` : `<span class="success">✅ ${message}</span>`;
+            el.appendChild(span);
+        }
+        
+        function clearOutput(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        async function clearAll() {
+            clearOutput('output1');
+            localStorage.clear();
+            log('output1', 'All data cleared');
+        }
+        
+        async function createUser() {
+            clearOutput('output2');
+            try {
+                const userData = {
+                    firstName: 'Test',
+                    lastName: 'User',
+                    email: 'test@example.com',
+                    institution: 'Test University',
+                    department: 'CS',
+                    position: 'Professor',
+                    password: 'Test@123',
+                    confirmPassword: 'Test@123'
+                };
+                
+                await Auth.register(userData);
+                log('output2', 'User created: test@example.com');
+            } catch (error) {
+                log('output2', error.message, true);
+            }
+        }
+        
+        async function doLogin() {
+            clearOutput('output3');
+            try {
+                const session = await Auth.login('test@example.com', 'Test@123');
+                log('output3', `Logged in as: ${session.fullName}`);
+                log('output3', `User ID: ${session.userId}`);
+            } catch (error) {
+                log('output3', error.message, true);
+            }
+        }
+        
+        async function createSubmission() {
+            clearOutput('output4');
+            try {
+                // Create a fake file
+                const blob = new Blob(['test content'], { type: 'application/pdf' });
+                const file = new File([blob], 'test.pdf', { type: 'application/pdf' });
+                
+                const formData = {
+                    title: 'Test Manuscript',
+                    abstract: 'This is a test abstract',
+                    keywords: 'test, keywords',
+                    journal: 'Test Journal',
+                    correspondingAuthor: 'Test Author',
+                    authorEmail: 'test@example.com',
+                    coAuthors: '',
+                    affiliation: 'Test University'
+                };
+                
+                const submission = await Submission.createSubmission(formData, file);
+                log('output4', `Submission created: ${submission.id}`);
+                log('output4', `Title: ${submission.title}`);
+                log('output4', `User ID in submission: ${submission.userId}`);
+            } catch (error) {
+                log('output4', error.message, true);
+            }
+        }
+        
+        function checkStorage() {
+            clearOutput('output5');
+            const users = JSON.parse(localStorage.getItem('cspg_users') || '[]');
+            const session = JSON.parse(localStorage.getItem('cspg_session'));
+            const submissions = JSON.parse(localStorage.getItem('cspg_submissions') || '[]');
+            
+            log('output5', `Users: ${users.length}`);
+            log('output5', `Submissions: ${submissions.length}`);
+            log('output5', `Session exists: ${!!session}`);
+            
+            const el = document.getElementById('output5');
+            const pre = document.createElement('pre');
+            pre.textContent = `Session: ${JSON.stringify(session, null, 2)}\n\nUsers: ${JSON.stringify(users, null, 2)}`;
+            el.appendChild(pre);
+        }
+        
+        function checkSession() {
+            clearOutput('output5');
+            const session = JSON.parse(localStorage.getItem('cspg_session'));
+            
+            if (!session) {
+                log('output5', 'No session found!', true);
+                return;
+            }
+            
+            log('output5', `Session found for: ${session.fullName}`);
+            log('output5', `User ID: ${session.userId}`);
+            
+            const el = document.getElementById('output5');
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(session, null, 2);
+            el.appendChild(pre);
+        }
+        
+        function checkSubmissions() {
+            clearOutput('output5');
+            const submissions = JSON.parse(localStorage.getItem('cspg_submissions') || '[]');
+            
+            if (submissions.length === 0) {
+                log('output5', 'No submissions found!', true);
+                return;
+            }
+            
+            log('output5', `Total submissions: ${submissions.length}`);
+            
+            const el = document.getElementById('output5');
+            submissions.forEach((sub, i) => {
+                const p = document.createElement('p');
+                p.textContent = `${i+1}. ID: ${sub.id} | Title: ${sub.title} | User ID: ${sub.userId}`;
+                el.appendChild(p);
+            });
+            
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(submissions, null, 2);
+            el.appendChild(pre);
+        }
+        
+        function verifyUserSubmissionMatch() {
+            clearOutput('output6');
+            
+            const session = JSON.parse(localStorage.getItem('cspg_session'));
+            const submissions = JSON.parse(localStorage.getItem('cspg_submissions') || '[]');
+            
+            if (!session) {
+                log('output6', 'No session found!', true);
+                return;
+            }
+            
+            if (submissions.length === 0) {
+                log('output6', 'No submissions found!', true);
+                return;
+            }
+            
+            log('output6', `Current User ID: ${session.userId}`);
+            log('output6', `Total Submissions: ${submissions.length}`);
+            
+            const userSubs = submissions.filter(s => s.userId === session.userId && !s.deleted);
+            log('output6', `User's Submissions: ${userSubs.length}`);
+            
+            if (userSubs.length > 0) {
+                log('output6', '✅ SUCCESS: User submissions found!');
+                const el = document.getElementById('output6');
+                userSubs.forEach((sub, i) => {
+                    const p = document.createElement('p');
+                    p.innerHTML = `<strong>Submission ${i+1}:</strong><br>ID: ${sub.id}<br>Title: ${sub.title}<br>Status: ${sub.status}`;
+                    el.appendChild(p);
+                });
+            } else {
+                log('output6', 'User has no submissions - Check if userId match!', true);
+                const el = document.getElementById('output6');
+                const pre = document.createElement('pre');
+                pre.textContent = 'All submissions:\n' + JSON.stringify(submissions, null, 2);
+                el.appendChild(pre);
+            }
+        }
+    </script>
+</body>
+</html>
